@@ -1,13 +1,25 @@
 <html>
 <head>
 <style type="text/css">
+.cardimg {
+	height: 136px;
+	width: 98px;
+	margin: 3px;
+}
+.pickTd {
+	background-color: red;
+}
 </style>
 </head>
 <body>
 <?php
 require_once("DraftFileReader.php");
-
-$file = $_GET["file"];
+if (isset($_GET["file"])) {
+	$file = $_GET["file"];
+}
+if (empty($file)) {
+	die();
+}
 $dfr = new DraftFileReader($file);
 $dfr->read();
 if (isset($_GET["pack"])) {
@@ -28,7 +40,22 @@ if ($nextPick > 15) {
 } else {
 	$nextPack = $pack;
 }
+$shouldDisplayPick = false;
+if (isset($_GET["shouldDisplayPick"])) {
+	$shouldDisplayPick = $_GET["shouldDisplayPick"];
+}
+$shouldDisplayPickChecked = "";
+if ($shouldDisplayPick) {
+	$shouldDisplayPickChecked = "checked";
+}
 ?>
+<form action="DraftViewer.php?pack=<?=$pack ?>&pick=<?=$pick ?>" method="get">
+<input type="checkbox" name="shouldDisplayPick" value="true" <?=$shouldDisplayPickChecked ?>>ピックを表示
+<input type="submit" name="submit">
+<input type="hidden" name="file" value="<?=$file ?>">
+<input type="hidden" name="pack" value="<?=$pack ?>">
+<input type="hidden" name="pick" value="<?=$pick ?>">
+</form>
 <a href="DraftViewer.php?file=<?=$file ?>&pack=<?=$nextPack ?>&pick=<?=$nextPick ?>">-> NEXT</a>
 <?php
 if (count($candidates) > 0) {
@@ -38,8 +65,15 @@ if (count($candidates) > 0) {
 <?php
 	$rowCount = 0;
 	foreach ($candidates as $cardName => $f) {
+		if ($shouldDisplayPick && $f) {
+			$cardTdClass = "pickTd";
+		} else {
+			$cardTdClass = "noPickTd";
+		}
 ?>
-<td><img style="height:136px;width:98px;" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&type=card&name=<?=$cardName ?>"></td>
+<td class="<?=$cardTdClass ?>">
+<img class="cardimg" src="http://gatherer.wizards.com/Handlers/Image.ashx?size=small&type=card&name=<?=$cardName ?>">
+</td>
 <?php
 		$rowCount++;
 		if ($rowCount == 5) {

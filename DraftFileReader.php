@@ -10,6 +10,7 @@ class draftFileReader {
 	private $pickTitlePattern = "/^Pack (\d) pick (\d+):$/";
 	private $currentPack;
 	private $currentPick;
+	private $structuredPicks;
 
 	/**
 	 * pack, pick, card, f
@@ -64,8 +65,27 @@ class draftFileReader {
 					$cardName = $line;
 					$f = false;
 				}
-				$this->picks[] = array("pack" => $this->currentPack, "pick" => $this->currentPick, "card_name" => $cardName, "f" => $f);
+				if (strpos($cardName, "(FOIL)") >= 0) {
+					$cardName = trim(str_replace("(FOIL)", "", $cardName));
+					$foil = true;
+				} else {
+					$foil = false;
+				}
+				$this->picks[] = array("pack" => $this->currentPack, "pick" => $this->currentPick, "card_name" => $cardName, "f" => $f, "foil" => $foil);
+				$this->structuredPicks[$this->currentPack][$this->currentPick][$cardName] = $f;
 			}
+		}
+	}
+
+	public function getConstuctedPicks() {
+		return $this->structuredPicks;
+	}
+
+	public function getPickCandidates($pack, $pick) {
+		if (isset($this->structuredPicks[$pack]) && isset($this->structuredPicks[$pack][$pick])) {
+			return $this->structuredPicks[$pack][$pick];
+		} else {
+			return array();
 		}
 	}
 }

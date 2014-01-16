@@ -20,8 +20,6 @@ if (isset($_GET["file"])) {
 if (empty($file)) {
 	die();
 }
-$dfr = new DraftFileReader($file);
-$dfr->read();
 if (isset($_GET["pack"])) {
 	$pack = $_GET["pack"];
 } else {
@@ -32,7 +30,6 @@ if (isset($_GET["pick"])) {
 } else {
 	$pick = 1;
 }
-$candidates = $dfr->getPickCandidates($pack, $pick);
 $nextPick = $pick + 1;
 if ($nextPick > 15) {
 	$nextPack = $pack + 1;
@@ -50,14 +47,22 @@ if ($shouldDisplayPick) {
 }
 ?>
 <form action="DraftViewer.php?pack=<?=$pack ?>&pick=<?=$pick ?>" method="get">
+<input type="number" name="pack" value="<?=$pack ?>">
+<input type="number" name="pick" value="<?=$pick ?>">
 <input type="checkbox" name="shouldDisplayPick" value="true" <?=$shouldDisplayPickChecked ?>>ピックを表示
 <input type="submit" name="submit">
 <input type="hidden" name="file" value="<?=$file ?>">
-<input type="hidden" name="pack" value="<?=$pack ?>">
-<input type="hidden" name="pick" value="<?=$pick ?>">
 </form>
 <a href="DraftViewer.php?file=<?=$file ?>&pack=<?=$nextPack ?>&pick=<?=$nextPick ?>">-> NEXT</a>
 <?php
+if (!$shouldDisplayPick) {
+?>
+<a href="DraftViewer.php?file=<?=$file ?>&pack=<?=$pack ?>&pick=<?=$pick ?>&shouldDisplayPick=true">-> PICK</a>
+<?php
+}
+$dfr = new DraftFileReader($file);
+$dfr->read();
+$candidates = $dfr->getPickCandidates($pack, $pick);
 if (count($candidates) > 0) {
 ?>
 <table>

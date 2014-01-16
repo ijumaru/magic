@@ -88,4 +88,8 @@ class draftFileReader {
 			return array();
 		}
 	}
+
+	public function getPacks() {
+		return $this->packs;
+	}
 }

@@ -5,6 +5,7 @@ class GathererSetCardList {
 	private $isTest = false;
 	private $list = array();
 	private $cardUrl = "../Card/Details.aspx?multiverseid=";
+	private $nameListMap;
 
 	public function __construct($set) {
 		$this->set = $set;
@@ -15,6 +16,10 @@ class GathererSetCardList {
 		if ($this->isTest) {
 			$this->url = 'test.html';
 		}
+		if (count(glob('./set/'.$this->set.".html") > 0)) {
+			$this->copyToLocal();
+		}
+		$this->url = './set/'.$this->set.".html";
 		@$domdoc = DOMDocument::loadHTML(file_get_contents($this->url));
 		if ($domdoc) {
 			$xpath = new DOMXPath($domdoc);
@@ -30,16 +35,30 @@ class GathererSetCardList {
 						$this->list[$index]["multiverseid"] = str_replace($this->cardUrl, "", $href);
 					}
 					$this->list[$index][$attr] = $trs->item($i)->nodeValue;
+					if (isset($this->list[$index]["name"])) {
+						$this->nameListMap[$this->list[$index]["name"]] = $this->list[$index];
+					}
 				}
 			}
 		}
 	}
 
 	public function copyToLocal() {
-		file_put_contents('test.html', file_get_contents($this->url));
+		if (!file_exists('.'.DIRECTORY_SEPARATOR.'set') || !is_dir('.'.DIRECTORY_SEPARATOR.'set')) {
+			mkdir('.'.DIRECTORY_SEPARATOR.'set');
+		}
+		file_put_contents('.'.DIRECTORY_SEPARATOR.'set'.DIRECTORY_SEPARATOR.$this->set.".html", file_get_contents($this->url));
 	}
 
 	public function setIsTest($isTest) {
 		$this->isTest = $isTest;
+	}
+
+	public function getList() {
+		return $this->list;
+	}
+
+	public function getNameListMap() {
+		return $this->nameListMap;
 	}
 }
